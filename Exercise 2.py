@@ -33,13 +33,13 @@ root.configure(bg="#2E8B57")  # Dark Cyan background
 instruction_label = tk.Label(root, text="Enter your command:", font=("Helvetica", 14), bg="#2E8B57", fg="#FFFFFF")
 instruction_label.pack(pady=5)
 
-entry = tk.Entry(root, font=("Helvetica", 14), bg="#FFD700", fg="#000000")  # Gold background
+entry = tk.Entry(root, font=("Helvetica", 14), bg="#FFD700", fg="#000000")  
 entry.pack(pady=5)
 
-setup_lbl = tk.Label(root, text="", font=("Georgia", 20, "bold"), bg="#2E8B57", fg="#000000", wraplength=460)  # Hot Pink
+setup_lbl = tk.Label(root, text="", font=("Georgia", 20, "bold"), bg="#2E8B57", fg="#000000", wraplength=460)  
 setup_lbl.pack(pady=10)
 
-punch_lbl = tk.Label(root, text="", font=("Helvetica Neue", 18, "underline"), bg="#2E8B57", fg="#000000", wraplength=460)  # Aquamarine
+punch_lbl = tk.Label(root, text="", font=("Helvetica Neue", 18, "underline"), bg="#2E8B57", fg="#000000", wraplength=460)  
 punch_lbl.pack(pady=10)
 
 def process_input(event=None):
