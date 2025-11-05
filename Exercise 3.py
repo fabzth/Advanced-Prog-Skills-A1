@@ -1,96 +1,78 @@
 import tkinter as tk
 from tkinter import messagebox, ttk
 
-MAX_TOTAL_SCORE = 160  # Maximum possible score: 60 from coursework (3 assignments × 20) + 100 from exam
-
+MAX_TOTAL_SCORE = 160
 
 class Student:
-    """Represents a student with coursework marks, exam mark, and calculated grades"""
-
     def __init__(self, code, name, mark1, mark2, mark3, exam_mark):
-        self.code = int(code)  # Convert student ID to integer
-        self.name = name  # Store student name
-        self.coursework_marks = [int(mark1), int(mark2), int(mark3)]  # Store coursework marks as integers
-        self.exam_mark = int(exam_mark)  # Convert exam mark to integer
-        self.calculate_scores()  # Calculate totals and grades immediately
+        self.code = int(code)
+        self.name = name
+        self.coursework_marks = [int(mark1), int(mark2), int(mark3)]
+        self.exam_mark = int(exam_mark)
+        self.calculate_scores()
 
     def calculate_scores(self):
-        """Calculate total scores, percentage, and determine grade"""
-        self.total_coursework = sum(self.coursework_marks)  # Sum of all coursework marks
-        self.total_score = self.total_coursework + self.exam_mark  # Combined coursework and exam score
-        self.percentage = (self.total_score / MAX_TOTAL_SCORE) * 100  # Calculate percentage out of maximum
-        # Determine letter grade based on percentage using conditional expression
+        self.total_coursework = sum(self.coursework_marks)
+        self.total_score = self.total_coursework + self.exam_mark
+        self.percentage = (self.total_score / MAX_TOTAL_SCORE) * 100
         self.grade = 'A' if self.percentage >= 70 else 'B' if self.percentage >= 60 else \
-            'C' if self.percentage >= 50 else 'D' if self.percentage >= 40 else 'F'
-
+                    'C' if self.percentage >= 50 else 'D' if self.percentage >= 40 else 'F'
 
 def load_data(filename):
-    """Load student data from CSV file and create Student objects"""
-    students = []  # Initialize empty list to store student objects
+    students = []
     try:
-        with open(filename, 'r') as file:  # Open file in read mode
-            file.readline(), file.readline()  # Skip first two lines (student count and header)
-            for line in file:  # Iterate through remaining lines
-                parts = line.strip().split(',')  # Split line by commas and remove whitespace
-                if len(parts) == 5: parts.append('0')  # Add default exam mark if missing
-                if len(parts) != 6: continue  # Skip lines that don't have exactly 6 parts
+        with open(filename, 'r') as file:
+            file.readline(), file.readline()
+            for line in file:
+                parts = line.strip().split(',')
+                if len(parts) == 5: parts.append('0')
+                if len(parts) != 6: continue
                 try:
-                    # Validate that all marks are non-negative integers
-                    if any(int(m) < 0 for m in parts[2:]): continue  # Skip if any mark is negative
-                    students.append(Student(*parts))  # Create Student object and add to list
+                    if any(int(m) < 0 for m in parts[2:]): continue
+                    students.append(Student(*parts))
                 except ValueError:
-                    continue  # Skip lines with invalid data types
-    except FileNotFoundError:  # Handle case where file doesn't exist
-        messagebox.showerror("Error", f"File '{filename}' not found")  # Show error dialog
-    return students  # Return the list of student objects
-
+                    continue
+    except FileNotFoundError:
+        messagebox.showerror("Error", f"File '{filename}' not found")
+    return students
 
 def save_data(filename, students):
-    """Save student data back to CSV file with proper header format"""
     try:
-        with open(filename, 'w') as file:  # Open file in write mode (overwrites existing)
-            file.write(f"{len(students)}\nID,Name,Grade1,Grade2,Grade3,ExamMark\n")  # Write count and header
-            for s in students:  # Iterate through each student
-                # Write student data in CSV format with all marks
-                file.write(
-                    f"{s.code},{s.name},{s.coursework_marks[0]},{s.coursework_marks[1]},{s.coursework_marks[2]},{s.exam_mark}\n")
-    except Exception as e:  # Handle any file write errors
-        messagebox.showerror("Save Error", f"Error saving data: {e}")  # Show error dialog
-
+        with open(filename, 'w') as file:
+            file.write(f"{len(students)}\nID,Name,Grade1,Grade2,Grade3,ExamMark\n")
+            for s in students:
+                file.write(f"{s.code},{s.name},{s.coursework_marks[0]},{s.coursework_marks[1]},{s.coursework_marks[2]},{s.exam_mark}\n")
+    except Exception as e:
+        messagebox.showerror("Save Error", f"Error saving data: {e}")
 
 class StudentApp:
-    """Main GUI application class for student management system"""
-
     def __init__(self, root, students):
-        self.root = root  # Store reference to main window
-        self.students = students  # Store list of student objects
-        self.root.title("Student Manager")  # Set window title
-        self.root.geometry("900x550")  # Set window dimensions
-        self.root.configure(bg="#D3C4E3")  # Set background color (light purple)
-        self.setup_ui()  # Initialize all UI components
-        self.update_student_list()  # Populate student dropdown
+        self.root = root
+        self.students = students
+        self.root.title("Student Manager")
+        self.root.geometry("900x550")
+        self.root.configure(bg="#D3C4E3")
+        self.setup_ui()
+        self.update_student_list()
 
     def setup_ui(self):
-        """Initialize and arrange all user interface components"""
-        # Create main title label with styling
+        # Title
         tk.Label(self.root, text="Student Manager", font=("Baskerville", 35, "bold"),
                  bg="#D3C4E3", fg="#4C191B").pack(pady=10)
 
-        # Create frame for function buttons (View, Sort, etc.)
+        # Function buttons
         button_frame = tk.Frame(self.root, bg="#D3C4E3")
         button_frame.pack(pady=5)
-        # Define function buttons with their commands
         buttons = [
             ("View All Records", self.view_all_records),
             ("Show Highest Score", self.show_highest_score),
             ("Show Lowest Score", self.show_lowest_score),
             ("Sort Records", self.sort_records)
         ]
-        # Create and grid each function button
         for i, (text, command) in enumerate(buttons):
             tk.Button(button_frame, text=text, command=command, width=20, height=2).grid(row=0, column=i, padx=10)
 
-        # Create frame for management buttons (Add, Delete, Update)
+        # Management buttons
         management_frame = tk.Frame(self.root, bg="#D3C4E3")
         management_frame.pack(pady=5)
         mgmt_buttons = [
@@ -98,250 +80,194 @@ class StudentApp:
             ("Delete Record", self.delete_record),
             ("Update Record", self.update_record)
         ]
-        # Create and grid each management button
         for i, (text, command) in enumerate(mgmt_buttons):
             tk.Button(management_frame, text=text, command=command, width=15, height=2).grid(row=0, column=i, padx=10)
 
-        # Create frame for individual student selection
+        # Student selection
         record_frame = tk.Frame(self.root, bg="#D3C4E3")
         record_frame.pack(pady=10)
-        # Label for student dropdown
         tk.Label(record_frame, text="View Individual Student Record:",
                  font=("Baskerville", 12), bg="#D3C4E3", fg="#4C191B").grid(row=0, column=0, padx=0)
-
-        self.selected_student = tk.StringVar()  # Variable to track selected student
-        # Create dropdown combobox for student selection
+        
+        self.selected_student = tk.StringVar()
         self.student_dropdown = ttk.Combobox(record_frame, textvariable=self.selected_student,
                                              state="readonly", width=20)
         self.student_dropdown.grid(row=0, column=1, padx=5)
-        # Button to view selected student's record
         tk.Button(record_frame, text="View Record", command=self.view_individual_record).grid(row=0, column=2, padx=5)
 
-        # Create main output text area for displaying records
+        # Output area
         self.output_text = tk.Text(self.root, wrap="word", width=70, height=15,
                                    font=("Lato", 10), bg="#FFFFFF", fg="#4C191B")
         self.output_text.pack(pady=10)
-        self.output_text.config(state="disabled")  # Make text area read-only initially
+        self.output_text.config(state="disabled")
 
     def update_student_list(self):
-        """Update the dropdown list with current student names"""
-        self.student_names = [student.name for student in self.students]  # Extract names from student objects
-        if hasattr(self, 'student_dropdown'):  # Check if dropdown widget exists
-            self.student_dropdown['values'] = self.student_names  # Update dropdown options
-            # Clear selection if selected student no longer exists
+        self.student_names = [student.name for student in self.students]
+        if hasattr(self, 'student_dropdown'):
+            self.student_dropdown['values'] = self.student_names
             if self.selected_student.get() not in self.student_names:
-                self.selected_student.set('')  # Reset selection
+                self.selected_student.set('')
 
     def display_student(self, student):
-        """Format a student's data into a readable string for display"""
         return (f"--- Student Record ---\n"
-                f"Name: {student.name}\n"  # Display student name
-                f"Number: {student.code}\n"  # Display student ID
-                f"Coursework Marks: {student.coursework_marks}\n"  # Show list of coursework marks
-                f"Coursework Total: {student.total_coursework}\n"  # Show coursework sum
-                f"Exam Mark: {student.exam_mark}\n"  # Display exam score
-                f"Total Score: {student.total_score} / {MAX_TOTAL_SCORE}\n"  # Show total and maximum
-                f"Overall Percentage: {student.percentage:.2f}%\n"  # Display percentage with 2 decimals
-                f"Final Grade: {student.grade}\n")  # Show letter grade
+                f"Name: {student.name}\n"
+                f"Number: {student.code}\n"
+                f"Coursework Marks: {student.coursework_marks}\n"
+                f"Coursework Total: {student.total_coursework}\n"
+                f"Exam Mark: {student.exam_mark}\n"
+                f"Total Score: {student.total_score} / {MAX_TOTAL_SCORE}\n"
+                f"Overall Percentage: {student.percentage:.2f}%\n"
+                f"Final Grade: {student.grade}\n")
 
     def show_output(self, content):
-        """Display content in the output text area"""
-        self.output_text.config(state="normal")  # Enable text widget for editing
-        self.output_text.delete("1.0", tk.END)  # Clear existing content
-        self.output_text.insert("1.0", content)  # Insert new content at beginning
-        self.output_text.config(state="disabled")  # Make text area read-only again
+        self.output_text.config(state="normal")
+        self.output_text.delete("1.0", tk.END)
+        self.output_text.insert("1.0", content)
+        self.output_text.config(state="disabled")
 
     def view_all_records(self):
-        """Display all student records with average percentage"""
-        if not self.students:  # Check if student list is empty
-            self.show_output("No student records to display.")  # Show message
+        if not self.students:
+            self.show_output("No student records to display.")
             return
-
-        output = "--- All Student Records ---\n\n"  # Initialize output string
-        total_percentage = 0  # Initialize total for average calculation
-        for student in self.students:  # Iterate through each student
-            output += self.display_student(student) + "\n"  # Add formatted student data
-            total_percentage += student.percentage  # Add to percentage total
-
-        # Calculate and display average percentage
+        output = "--- All Student Records ---\n\n"
+        total_percentage = 0
+        for student in self.students:
+            output += self.display_student(student) + "\n"
+            total_percentage += student.percentage
         avg_percentage = total_percentage / len(self.students)
         output += f"\nTotal Students: {len(self.students)}\nAverage Percentage: {avg_percentage:.2f}%"
-        self.show_output(output)  # Display all content
+        self.show_output(output)
 
     def view_individual_record(self):
-        """Display record for the selected student"""
-        selected_name = self.selected_student.get()  # Get selected student name
-        if not selected_name:  # Check if no student is selected
+        selected_name = self.selected_student.get()
+        if not selected_name:
             messagebox.showwarning("Selection Required", "Please select a student from the dropdown.")
             return
-
-        # Find student object by name
         student = next((s for s in self.students if s.name == selected_name), None)
-        if student:  # If student found
-            self.show_output(self.display_student(student))  # Display their record
+        if student:
+            self.show_output(self.display_student(student))
 
     def show_highest_score(self):
-        """Find and display student with the highest total score"""
-        if not self.students:  # Check if student list is empty
+        if not self.students:
             self.show_output("No student records to check scores.")
             return
-
-        student = max(self.students, key=lambda s: s.total_score)  # Find student with max score
+        student = max(self.students, key=lambda s: s.total_score)
         output = f"--- Student with Highest Score ({student.total_score}) ---\n"
-        output += self.display_student(student)  # Add student data to output
-        self.show_output(output)  # Display result
+        output += self.display_student(student)
+        self.show_output(output)
 
     def show_lowest_score(self):
-        """Find and display student with the lowest total score"""
-        if not self.students:  # Check if student list is empty
+        if not self.students:
             self.show_output("No student records to check scores.")
             return
-
-        student = min(self.students, key=lambda s: s.total_score)  # Find student with min score
+        student = min(self.students, key=lambda s: s.total_score)
         output = f"--- Student with Lowest Score ({student.total_score}) ---\n"
-        output += self.display_student(student)  # Add student data to output
-        self.show_output(output)  # Display result
+        output += self.display_student(student)
+        self.show_output(output)
 
     def sort_records(self):
-        """Sort student records by total score and save to file"""
-        if not self.students:  # Check if student list is empty
+        if not self.students:
             self.show_output("No student records to sort.")
             return
-
-        # Ask user for sort order preference
         answer = messagebox.askquestion("Sort Order", "Sort in descending order (highest score first)?")
-        self.students.sort(key=lambda s: s.total_score, reverse=(answer == 'yes'))  # Sort students
-        save_data(filename, self.students)  # Save sorted data to file
-        self.update_student_list()  # Update dropdown with new order
-        self.view_all_records()  # Display sorted records
-        messagebox.showinfo("Success", "Student records sorted successfully.")  # Confirm success
+        self.students.sort(key=lambda s: s.total_score, reverse=(answer == 'yes'))
+        save_data(filename, self.students)
+        self.update_student_list()
+        self.view_all_records()
+        messagebox.showinfo("Success", "Student records sorted successfully.")
 
     def add_record(self):
-        """Open window to add a new student record"""
-        add_window = tk.Toplevel(self.root)  # Create new window
-        add_window.title("Add Student Record")  # Set window title
-
-        fields = ["Student Code", "Name", "CW Mark 1", "CW Mark 2", "CW Mark 3", "Exam Mark"]  # Field labels
-        entries = {}  # Dictionary to store entry widgets
-
-        # Create labels and entry fields for each input
+        add_window = tk.Toplevel(self.root)
+        add_window.title("Add Student Record")
+        fields = ["Student Code", "Name", "CW Mark 1", "CW Mark 2", "CW Mark 3", "Exam Mark"]
+        entries = {}
         for i, field in enumerate(fields):
-            tk.Label(add_window, text=field).grid(row=i, column=0, padx=5, pady=5, sticky='w')  # Create label
-            entries[field] = tk.Entry(add_window)  # Create entry field
-            entries[field].grid(row=i, column=1, padx=5, pady=5)  # Position entry
+            tk.Label(add_window, text=field).grid(row=i, column=0, padx=5, pady=5, sticky='w')
+            entries[field] = tk.Entry(add_window)
+            entries[field].grid(row=i, column=1, padx=5, pady=5)
 
         def save_new_record():
-            """Validate and save new student record"""
             try:
-                code = int(entries["Student Code"].get())  # Get and convert student code
-                name = entries["Name"].get().strip()  # Get and clean student name
-                # Get all three coursework marks
+                code = int(entries["Student Code"].get())
+                name = entries["Name"].get().strip()
                 marks = [int(entries[f"CW Mark {i + 1}"].get()) for i in range(3)]
-                exam_mark = int(entries["Exam Mark"].get())  # Get exam mark
-
-                # Validate marks are non-negative
+                exam_mark = int(entries["Exam Mark"].get())
                 if any(m < 0 for m in marks + [exam_mark]):
                     messagebox.showerror("Input Error", "Marks must be non-negative.")
                     return
-                # Check for duplicate student codes
                 if any(s.code == code for s in self.students):
                     messagebox.showerror("Input Error", f"Student Code {code} already exists.")
                     return
-
-                self.students.append(Student(code, name, *marks, exam_mark))  # Create and add new student
-                save_data(filename, self.students)  # Save updated data to file
-                self.update_student_list()  # Refresh dropdown
-                add_window.destroy()  # Close add window
-                messagebox.showinfo("Success", "Student record added successfully.")  # Confirm success
-            except ValueError:  # Handle invalid integer inputs
+                self.students.append(Student(code, name, *marks, exam_mark))
+                save_data(filename, self.students)
+                self.update_student_list()
+                add_window.destroy()
+                messagebox.showinfo("Success", "Student record added successfully.")
+            except ValueError:
                 messagebox.showerror("Input Error", "Please ensure all fields are valid integers.")
 
-        # Create save button in add window
         tk.Button(add_window, text="Save Record", command=save_new_record).grid(
             row=len(fields), column=0, columnspan=2, pady=10)
 
     def delete_record(self):
-        """Delete the selected student record"""
-        selected_name = self.selected_student.get()  # Get selected student name
-        if not selected_name:  # Check if no student selected
+        selected_name = self.selected_student.get()
+        if not selected_name:
             messagebox.showwarning("Selection Required", "Please select a student to delete.")
             return
-
-        # Confirm deletion with user
         if messagebox.askyesno("Confirm Delete", f"Delete record for {selected_name}?"):
-            # Find student object by name
             student = next((s for s in self.students if s.name == selected_name), None)
-            if student:  # If student found
-                self.students.remove(student)  # Remove from list
-                save_data(filename, self.students)  # Save updated data
-                self.update_student_list()  # Refresh dropdown
-                self.show_output(f"Record for {selected_name} has been deleted.")  # Confirm deletion
+            if student:
+                self.students.remove(student)
+                save_data(filename, self.students)
+                self.update_student_list()
+                self.show_output(f"Record for {selected_name} has been deleted.")
 
     def update_record(self):
-        """Open window to update selected student's marks"""
-        selected_name = self.selected_student.get()  # Get selected student name
-        # Find student object by name
+        selected_name = self.selected_student.get()
         student = next((s for s in self.students if s.name == selected_name), None)
-
-        if not student:  # Check if student not found
+        if not student:
             messagebox.showwarning("Selection Required", "Please select a student to update.")
             return
-
-        update_window = tk.Toplevel(self.root)  # Create new window
-        update_window.title(f"Update Record for {selected_name}")  # Set window title
-
-        # Current field values for pre-population
+        update_window = tk.Toplevel(self.root)
+        update_window.title(f"Update Record for {selected_name}")
         fields = {
             "Coursework Mark 1": student.coursework_marks[0],
             "Coursework Mark 2": student.coursework_marks[1],
             "Coursework Mark 3": student.coursework_marks[2],
             "Exam Mark": student.exam_mark
         }
-        entries = {}  # Dictionary to store entry widgets
-
-        # Display which student is being updated
+        entries = {}
         tk.Label(update_window, text=f"Updating: {selected_name} (Code: {student.code})").grid(
-            row=0, column=0, columnspan=2, pady=5)
-
-        # Create labels and pre-filled entry fields for each mark
+            row=0, column=0, columnspan=2, pady=10)
         for i, (label, value) in enumerate(fields.items()):
             tk.Label(update_window, text=label).grid(row=i + 1, column=0, padx=5, pady=5, sticky='w')
-            entries[label] = tk.Entry(update_window)  # Create entry field
-            entries[label].insert(0, str(value))  # Pre-fill with current value
+            entries[label] = tk.Entry(update_window)
+            entries[label].insert(0, str(value))
             entries[label].grid(row=i + 1, column=1, padx=5, pady=5)
 
         def save_updated_record():
-            """Validate and save updated student marks"""
             try:
-                # Get new marks from entry fields
                 new_marks = [int(entries[f"Coursework Mark {i + 1}"].get()) for i in range(3)]
-                new_exam_mark = int(entries["Exam Mark"].get())  # Get new exam mark
-
-                # Validate marks are non-negative
+                new_exam_mark = int(entries["Exam Mark"].get())
                 if any(m < 0 for m in new_marks + [new_exam_mark]):
                     messagebox.showerror("Input Error", "Marks must be non-negative.")
                     return
-
-                student.coursework_marks = new_marks  # Update coursework marks
-                student.exam_mark = new_exam_mark  # Update exam mark
-                student.calculate_scores()  # Recalculate totals and grade
-
-                save_data(filename, self.students)  # Save updated data
-                self.update_student_list()  # Refresh dropdown
-                update_window.destroy()  # Close update window
-                messagebox.showinfo("Success", "Student record updated successfully.")  # Confirm success
-            except ValueError:  # Handle invalid integer inputs
+                student.coursework_marks = new_marks
+                student.exam_mark = new_exam_mark
+                student.calculate_scores()
+                save_data(filename, self.students)
+                self.update_student_list()
+                update_window.destroy()
+                messagebox.showinfo("Success", "Student record updated successfully.")
+            except ValueError:
                 messagebox.showerror("Input Error", "Please enter valid integers for marks.")
 
-        # Create save button in update window
         tk.Button(update_window, text="Save Changes", command=save_updated_record).grid(
             row=len(fields) + 1, column=0, columnspan=2, pady=10)
 
-
-# Application entry point
 if __name__ == "__main__":
-    filename = "/Users/fabiolazeth/Desktop/AP/ADVPROG ASSESSMENT 1/studentsMarks.txt"  # Data file path
-    students = load_data(filename)  # Load student data from file
-    root = tk.Tk()  # Create main application window
-    app = StudentApp(root, students)  # Initialize application
+    filename = "studentsMarks.txt"
+    students = load_data(filename)
+    root = tk.Tk()
+    app = StudentApp(root, students)
     root.mainloop()
